@@ -131,6 +131,13 @@ class CollisionIndex {
         const minPerspectiveRatio = 0.55;
         const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio || projectedPoint.occluded;
 
+        //return collision result
+        // return {
+        //         box: [tlX, tlY, brX, brY],
+        //         offscreen: false,
+        //         occluded: false
+        //     };
+
         if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
             (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) ||
             isClipped) {

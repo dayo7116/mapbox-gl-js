@@ -54,7 +54,7 @@ import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
 
-const GRID_DIM = 128;
+const GRID_DIM = 32;//
 
 const FBO_POOL_SIZE = 5;
 const RENDER_CACHE_MAX_SIZE = 50;
@@ -123,6 +123,8 @@ class ProxySourceCache extends SourceCache {
     override update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) { // eslint-disable-line no-unused-vars
         if (transform.freezeTileCoverage) { return; }
         this.transform = transform;
+        // const idealTileIDs = [];
+
         const idealTileIDs = transform.coveringTiles({
             tileSize: this._source.tileSize,
             minzoom: this._source.minzoom,
@@ -883,7 +885,7 @@ export class Terrain extends Elevation {
             this.renderedToTile = false; // reset flag.
             if (fbo.dirty) {
                 // Clear on start.
-                context.clear({color: Color.transparent, stencil: 0});
+                context.clear({color: new Color(0, 0, 0.6, 0.6), stencil: 0});
                 fbo.dirty = false;
             }
 

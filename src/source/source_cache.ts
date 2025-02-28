@@ -578,6 +578,7 @@ class SourceCache extends Evented {
                 isTerrainDEM: this.usedForTerrain,
                 calculateQuadrantVisibility: isBatchedModelType
             });
+            // idealTileIDs = [];
 
             if (this._source.hasTile) {
                 const hasTile = this._source.hasTile.bind(this._source);

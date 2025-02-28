@@ -576,6 +576,7 @@ export class Placement {
                 box.tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
                 const elevation = this.transform.elevation;
                 box.elevation = (elevationFromSea ? symbolZOffsetValue : symbolZOffsetValue + (elevation ? elevation.getAtTileOffset(box.tileID, box.tileAnchorX, box.tileAnchorY) : 0));
+                // box.elevation = 0; 碰撞框高度
                 box.elevation += symbolInstance.zOffset;
             };
 

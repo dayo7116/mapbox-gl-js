@@ -145,6 +145,9 @@ class Actor {
                     // @ts-ignore
                     callback(deserialize(task.error));
                 } else {
+                    if (task.data.$name == 'DEMData') {
+                        console.log();
+                    }
                     callback(null, deserialize(task.data));
                 }
             }

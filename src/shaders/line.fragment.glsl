@@ -163,6 +163,9 @@ void main() {
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);
 #endif
+    glFragColor.r = 1.0;
+    glFragColor.g = 0.0;
+    glFragColor.b = 0.0;
 
     HANDLE_WIREFRAME_DEBUG;
 }

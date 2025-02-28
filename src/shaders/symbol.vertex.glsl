@@ -120,6 +120,7 @@ void main() {
     e += a_auto_z_offset;
 #endif
 
+//    e = 5000.0f; //point height
     vec3 h = elevationVector(tile_anchor) * e;
 
     float globe_occlusion_fade;

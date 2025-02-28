@@ -7,4 +7,7 @@ void main() {
 
     glFragColor  = mix(red, blue, step(0.5, v_placed)) * 0.5;
     glFragColor *= mix(1.0, 0.1, step(0.5, v_notUsed));
+    glFragColor.r = 1.0;
+    glFragColor.g = 1.0;
+    glFragColor.b = 0.0;
 }

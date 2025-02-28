@@ -1354,6 +1354,7 @@ class Transform {
                 if (options.calculateQuadrantVisibility) {
                     id.visibleQuadrants = visibility;
                 }
+                // if (id.overscaledZ < 5)
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
 
                 continue;

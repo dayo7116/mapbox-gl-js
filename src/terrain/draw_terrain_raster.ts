@@ -136,7 +136,7 @@ function demTileChanged(prev?: Tile | null, next?: Tile | null): boolean {
 const vertexMorphing = new VertexMorphing();
 const SHADER_DEFAULT = 0;
 const SHADER_MORPHING = 1;
-const defaultDuration = 250;
+const defaultDuration = 5000;
 
 const shaderDefines = {
     "0": null,

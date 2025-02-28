@@ -21,8 +21,8 @@
 <body>
 <div id='map'></div>
 <div id='checkboxes'>
-    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
-    <label><input id='globe-checkbox' type='checkbox' checked> globe</label><br />
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+    <label><input id='globe-checkbox' type='checkbox'> globe</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
@@ -32,18 +32,23 @@
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src='access_token_generated.js'></script>
 <script>
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     devtools: true,
-    zoom: 13.5,
-    center: [-122.45814, 37.76159],
+    // zoom: 13.5,
+    // center: [-122.45814, 37.76159],
+    zoom: 17,
+    center: [-122.019807, 45.632433],
+    pitch: 75,
+
     style: 'mapbox://styles/mapbox/streets-v11',
     // style: 'mapbox://styles/claretrainor/ck2pc4ljf1jbe1codiy7oxzjg', // Style with additional traffic vector source.
     hash: true,
-    projection: 'globe',
+    projection: null,
 });
 
 map.addControl(new mapboxgl.NavigationControl());
@@ -64,126 +69,145 @@ const r = 255 * 0.75;
 let buildingsLayerId = '3d-buildings';
 const hillshadeId = 'mapbox-dem-hillshade';
 
+var dem_add = false;
+
 map.on('style.load', function() {
-    map.addSource('mapbox-dem', {
-        "type": "raster-dem",
-        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
-        "tileSize": 514,
-        "maxzoom": 14
-    });
-    map.addSource('ethnicity', {
-        type: 'vector',
-        url: 'mapbox://examples.8fgz4egr',
-        maxzoom: 16
-    });
+    // map.addSource('mapbox-dem', {
+    //     "type": "raster-dem",
+    //     "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+    //     "tileSize": 514,
+    //     "maxzoom": 14
+    // });
+    // map.setTerrain(null);
 
-    map.addSource("satellite", {
-        "type": "raster",
-        "url": "mapbox://mapbox.satellite",
-        "tileSize": 512
-    });
+    // map.addSource('ethnicity', {
+    //     type: 'vector',
+    //     url: 'mapbox://examples.8fgz4egr',
+    //     maxzoom: 16
+    // });
 
-    map.addLayer({
-        "id": "satellite-background",
-        "type": "background",
-        "layout": {
-            "visibility": "none"
-        },
-        "paint": {
-            "background-color": "rgb(128,128,128)",
-            "background-opacity": 0.01
-        }
-    });
-    map.addLayer({
-        "id": "satellite",
-        "type": "raster",
-        "source": "satellite",
-        "layout": {
-            "visibility": "none"
-        }
-    });
+    // map.addSource("satellite", {
+    //     "type": "raster",
+    //     "url": "mapbox://mapbox.satellite",
+    //     "tileSize": 512
+    // });
+
+    // map.addLayer({
+    //     "id": "satellite-background",
+    //     "type": "background",
+    //     "layout": {
+    //         "visibility": "none"
+    //     },
+    //     "paint": {
+    //         "background-color": "rgb(128,128,128)",
+    //         "background-opacity": 0.01
+    //     }
+    // });
+    // map.addLayer({
+    //     "id": "satellite",
+    //     "type": "raster",
+    //     "source": "satellite",
+    //     "layout": {
+    //         "visibility": "none"
+    //     }
+    // });
+
     map.setLights([
         {
-            'type': 'flat',
-            'id': 'flat',
-            'properties': {
-                'intensity': 0.26
+            "id": "sun_light",
+            "type": "directional",
+            "properties": {
+                "color": "rgba(255.0, 255.0, 255.0, 255.0)",
+                "intensity": 0.4,
+                "direction": [200.0, 40.0],
+                "cast-shadows": true,
+                "shadow-intensity": 0.2
+            }
+        },
+
+        {
+            "id": "env_light",
+            "type": "ambient",
+            "properties": {
+                "color": "rgba(255.0, 255.0, 255.0, 255.0)",
+                "intensity": 0.3
             }
         }
     ]);
+
     const buildingExtrusions = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion');
     if (buildingExtrusions) {
         buildingsLayerId = buildingExtrusions;
     } else {
-        map.addLayer({
-            'id': buildingsLayerId,
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['==', 'extrude', 'true'],
-            'type': 'fill-extrusion',
-            'minzoom': 14,
-            'paint': {
-                'fill-extrusion-color': 'white',
-                'fill-extrusion-height': ["get", "height"],
-                'fill-extrusion-base': ["get", "min_height"]
-            }
-        }, 'waterway-label');
+        // map.addLayer({
+        //     'id': buildingsLayerId,
+        //     'source': 'composite',
+        //     'source-layer': 'building',
+        //     'filter': ['==', 'extrude', 'true'],
+        //     'type': 'fill-extrusion',
+        //     'minzoom': 14,
+        //     'paint': {
+        //         'fill-extrusion-color': 'white',
+        //         'fill-extrusion-height': ["get", "height"],
+        //         'fill-extrusion-base': ["get", "min_height"]
+        //     }
+        // }, 'waterway-label');
     }
 
-    map.addLayer({
-        'id': 'sky',
-        'type': 'sky',
-        'paint': {
-            'sky-type': 'atmosphere',
-            'sky-gradient-center': [90, 3],
-            'sky-opacity': [
-                'interpolate',
-                ['exponential', 0.1],
-                ['zoom'],
-                5,
-                0,
-                22,
-                1
-            ]
-        }
-    });
+    // map.addLayer({
+    //     'id': 'sky',
+    //     'type': 'sky',
+    //     'paint': {
+    //         'sky-type': 'atmosphere',
+    //         'sky-gradient-center': [90, 3],
+    //         'sky-opacity': [
+    //             'interpolate',
+    //             ['exponential', 0.1],
+    //             ['zoom'],
+    //             5,
+    //             0,
+    //             22,
+    //             1
+    //         ]
+    //     }
+    // });
 
-    map.addLayer({
-        'id': 'population',
-        'type': 'circle',
-        'source': 'ethnicity',
-        'source-layer': 'sf2010',
-        'layout': {
-            'visibility': 'none'
-        },
-        'paint': {
-            // make circles larger as the user zooms from z12 to z22
-            'circle-radius': {
-                'base': 1.75,
-                'stops': [
-                    [12, 2],
-                    [22, 180]
-                ]
-            },
-            'circle-pitch-alignment': 'map',
-            // color circles by ethnicity, using a match expression
-            // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
-            'circle-color': [
-                'match',
-                ['get', 'ethnicity'],
-                'White',
-                '#fbb03b',
-                'Black',
-                '#223b53',
-                'Hispanic',
-                '#e55e5e',
-                'Asian',
-                '#3bb2d0',
-                /* other */
-                '#ccc'
-            ]
-        }
-    });
+    // map.addLayer({
+    //     'id': 'population',
+    //     'type': 'circle',
+    //     'source': 'ethnicity',
+    //     'source-layer': 'sf2010',
+    //     'layout': {
+    //         'visibility': 'none'
+    //     },
+    //     'paint': {
+    //         // make circles larger as the user zooms from z12 to z22
+    //         'circle-radius': {
+    //             'base': 1.75,
+    //             'stops': [
+    //                 [12, 2],
+    //                 [22, 180]
+    //             ]
+    //         },
+    //         'circle-pitch-alignment': 'map',
+    //         // color circles by ethnicity, using a match expression
+    //         // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+    //         'circle-color': [
+    //             'match',
+    //             ['get', 'ethnicity'],
+    //             'White',
+    //             '#fbb03b',
+    //             'Black',
+    //             '#223b53',
+    //             'Hispanic',
+    //             '#e55e5e',
+    //             'Asian',
+    //             '#3bb2d0',
+    //             /* other */
+    //             '#ccc'
+    //         ]
+    //     }
+    // });
 
     var highlightLayer = {
         id: 'highlight',
@@ -259,15 +283,96 @@ map.on('style.load', function() {
 
     map.setFog({});
 
-    map.addLayer(highlightLayer);
+    // map.addLayer(highlightLayer);
 
-    document.getElementById('road-label-checkbox').onclick();
-    document.getElementById('satellite-checkbox').onclick();
-    document.getElementById('terrain-checkbox').onclick();
-    document.getElementById('globe-checkbox').onclick();
-    document.getElementById('buildings-checkbox').onclick();
-    document.getElementById('circles-checkbox').onclick();
-    document.getElementById('custom-checkbox').onclick();
+
+    // map.addSource('route', {
+    //     'type': 'geojson',
+    //     'data': {
+    //         'type': 'Feature',
+    //         'properties': {},
+    //         'geometry': {
+    //             'type': 'LineString',
+    //             'coordinates': [
+    //                 [-119.97684, 37.9673049],
+    //                 [-118.7786276, 37.5253796]
+    //             ]
+    //         }
+    //     }
+    // });
+    // map.addLayer({
+    //     'id': 'route',
+    //     'type': 'line',
+    //     'source': 'route',
+    //     'layout': {
+    //         'line-join': 'round',
+    //         'line-cap': 'round'
+    //     },
+    //     'paint': {
+    //         'line-color': '#888',
+    //         'line-width': 8
+    //     }
+    // });
+
+    // eslint-disable-next-line no-undef
+    // d3.json(
+    //     'https://docs.mapbox.com/mapbox-gl-js/assets/hike.geojson',
+    //     function (err, data) {
+    //         if (err) throw err;
+
+    //         // save full coordinate list for later
+    //         var coordinates = data.features[0].geometry.coordinates;
+
+    //         // add it to the map
+    //         map.addSource('trace', {type: 'geojson', data, 'lineMetrics': true});
+    //         map.addLayer({
+    //             type: 'line',
+    //             source: 'trace',
+    //             id: 'line',
+    //             paint: {
+    //                 'line-color': 'orange',
+    //                 'line-width': 5,
+    //                 'line-gradient': [
+    //                     'step',
+    //                     ['line-progress'],
+    //                     'orange',
+    //                     0.0, 'rgba(0, 0, 0, 0)',
+    //                 ]
+    //             },
+    //             layout: {
+    //                 'line-cap': 'round',
+    //                 'line-join': 'round'
+    //             }
+    //         });
+
+    //         map.setPitch(80);
+
+    //         let t = 0.0;
+    //         const tick = 1000.0 / 30.0;
+    //         const duration = 260;
+    //         setInterval(() => {
+    //             map.setPaintProperty('line', 'line-gradient',  [
+    //                 'step',
+    //                 ['line-progress'],
+    //                 'orange',
+    //                 t, 'rgba(0, 0, 0, 0)'
+    //             ]);
+    //             t += 1.0 / ((duration * 1000.0) / tick);
+    //         }, tick);
+    //         const cameraTick = 3000.0;
+    //         setInterval(() => {
+    //             map.flyTo({'center': coordinates[Math.floor(t * coordinates.length)], 'zoom': 16, 'speed': 0.05});
+    //         }, cameraTick);
+    //     }
+    // );
+
+    // document.getElementById('road-label-checkbox').onclick();
+    // document.getElementById('satellite-checkbox').onclick();
+    // document.getElementById('terrain-checkbox').onclick();
+    // document.getElementById('globe-checkbox').onclick();
+    // document.getElementById('buildings-checkbox').onclick();
+    // document.getElementById('circles-checkbox').onclick();
+    // document.getElementById('custom-checkbox').onclick();
 });
 
 document.getElementById('globe-checkbox').onclick = function() {
@@ -275,6 +380,15 @@ document.getElementById('globe-checkbox').onclick = function() {
 };
 
 document.getElementById('terrain-checkbox').onclick = function() {
+    if (false == dem_add) {
+            map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+            "tileSize": 514,
+            "maxzoom": 14
+        });
+        dem_add = true;
+    }
     map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
 };
 
